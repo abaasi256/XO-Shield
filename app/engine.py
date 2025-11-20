@@ -24,7 +24,7 @@ class SecurityEngine:
                 is_up = stats[settings.WIREGUARD_INTERFACE].isup
                 return "UP" if is_up else "DOWN"
             else:
-                # Fallback to ip link if psutil misses it (unlikely but possible)
+                # Fallback to ip link if psutil misses it
                 result = subprocess.run(
                     ["ip", "link", "show", settings.WIREGUARD_INTERFACE],
                     capture_output=True, text=True
@@ -53,15 +53,14 @@ class SecurityEngine:
             return 999.0
 
     def check_firewall(self):
-        """Check if UFW is active."""
+        """Check if UFW is active (Safe Method)."""
         try:
-            # This might require sudo, or running the script as root.
-            # We'll try to read status.
+            # systemctl status can be read by non-root users
             result = subprocess.run(
-                ["ufw", "status"],
+                ["systemctl", "is-active", "ufw"],
                 capture_output=True, text=True
             )
-            if "Status: active" in result.stdout:
+            if result.stdout.strip() == "active":
                 return "ACTIVE"
             return "INACTIVE"
         except FileNotFoundError:
