@@ -3,8 +3,7 @@
 > **A Real-time WireGuard VPN Security Engine & Dashboard**
 > *Live Demo: https://vpn.xoxoent.space*
 
-![XO-Shield Dashboard](https://github.com/user-attachments/assets/placeholder-for-your-screenshot)
-*(Replace this line with the link to your actual screenshot)*
+![XO-Shield Dashboard](XO_Shield.png)
 
 ## 🛡️ Overview
 **XO-Shield** is a self-hosted VPN infrastructure and security monitoring system designed to solve the "black box" problem of standard VPNs. Instead of just connecting blindly, XO-Shield provides a **real-time "Security Score"** (0-100) based on live telemetry from the server's kernel.
@@ -43,3 +42,80 @@ graph TD
         Engine -->|Checks| UFW[Firewall Status]
         Engine -->|Pings| Cloud[Cloudflare 1.1.1.1]
     end
+````
+
+## 🚀 Installation
+
+### Prerequisites
+
+  * Ubuntu 20.04/22.04 Server
+  * Python 3.10+
+  * Root/Sudo access
+
+### 1\. Clone & Setup
+
+```bash
+git clone [https://github.com/abaasi256/XO-Shield.git](https://github.com/abaasi256/XO-Shield.git) /opt/xo-shield
+cd /opt/xo-shield
+
+# Create Virtual Env
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2\. Configure Environment
+
+Create a `.env` file (optional) or rely on defaults in `app/config.py`.
+
+```bash
+export WIREGUARD_INTERFACE=wg0
+export CHECK_INTERVAL=10
+```
+
+### 3\. Deploy Infrastructure (WireGuard + UFW)
+
+*Note: This step requires Sudo.*
+
+```bash
+# Run the automated setup script (audited for safety)
+sudo bash scripts/setup_wireguard.sh
+```
+
+### 4\. Run as Service
+
+```bash
+# Copy systemd file
+sudo cp scripts/xo-shield.service /etc/systemd/system/
+sudo systemctl enable --now xo-shield
+```
+
+## 🧠 How the Engine Works
+
+The `SecurityEngine` class (`app/engine.py`) operates on a decoupled thread:
+
+1.  **VPN Integrity:** Checks `/sys/class/net/wg0` to verify the interface is physically UP.
+2.  **Firewall Audit:** queries `systemctl is-active ufw` to ensure the packet filter is running.
+3.  **Latency Probe:** Executes a high-priority ICMP ping to a neutral DNS (1.1.1.1) to detect routing anomalies.
+
+**Scoring Logic:**
+
+  * Start: 100 Points
+  * VPN Down: -50 Points (Critical)
+  * Firewall Off: -30 Points (High Risk)
+  * Latency \> 100ms: -20 Points (Performance Warning)
+
+## 📜 License
+
+MIT License. Created as a Portfolio Project.
+
+```
+
+***
+
+### Final Task for You:
+1.  **Upload that screenshot:** Go to your GitHub repo, click "Issues", drag your screenshot into the text box, and copy the link it generates. Paste that link into the `![XO-Shield Dashboard](...)` line in the README above.
+2.  **Commit & Push:** Update your repo with this README.
+
+You have done excellent work, Abbie. This is a solid DevSecOps project. Would you like to close this session, or do you have any final questions about maintaining the server?
+```
