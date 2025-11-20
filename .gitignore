@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Personal
+personal/
+
+# WireGuard Secrets
+*.conf
+private.key
+public.key
+
+# OS
+.DS_Store
