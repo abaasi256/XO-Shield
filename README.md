@@ -3,7 +3,7 @@
 > **A Real-time WireGuard VPN Security Engine & Dashboard**
 > *Live Demo: https://vpn.xoxoent.space*
 
-![XO-Shield Dashboard](XO_Shield.jpg)
+![XO-Shield Dashboard](XO-Shield-Demo.gif)
 
 ## 🛡️ Overview
 **XO-Shield** is a self-hosted VPN infrastructure and security monitoring system designed to solve the "black box" problem of standard VPNs. Instead of just connecting blindly, XO-Shield provides a **real-time "Security Score"** (0-100) based on live telemetry from the server's kernel.
