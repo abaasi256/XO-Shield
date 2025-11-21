@@ -43,7 +43,9 @@ graph TD
         Engine -->|Checks| UFW[Firewall Status]
         Engine -->|Pings| Cloud[Cloudflare 1.1.1.1]
     end
-🚀 Installation
+```
+
+## 🚀 Installation
 Prerequisites
 
 Ubuntu 20.04/22.04 Server
