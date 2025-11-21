@@ -16,14 +16,78 @@ It runs on a **Ubuntu 22.04 VPS** and uses a custom Python engine to audit the c
 * **Non-Blocking Architecture:** Uses Python `threading` to perform heavy network probes (Ping, WireGuard Handshakes) in the background without slowing down the API.
 * **Secure Networking:** Implements **WireGuard** with Kernel-level NAT masquerading (IP Forwarding).
 * **Production Hardening:**
-    * Deployed behind an **Nginx Reverse Proxy** with SSL (Let's Encrypt).
-    * Protected by a whitelist-only **UFW Firewall**.
-    * Systemd automated service management.
+    * **Stealth SSH:** Default port 22 disabled; running on custom port.
+    * **Leak Protection:** IPv6 disabled at the Kernel/GRUB level to prevent routing leaks.
+    * **Firewall:** UFW configured with strict whitelist-only rules.
+    * **Reverse Proxy:** Nginx handling SSL termination (Let's Encrypt).
 
-## Tech Stack
+## 🛠️ Tech Stack
+* **Core:** Python 3.10+, FastAPI
+* **Networking:** WireGuard, Netlink (iproute2), UFW, iptables
+* **Frontend:** HTML5, Tailwind CSS via CDN, JavaScript (Fetch API)
+* **Infrastructure:** Ubuntu 22.04 LTS (Contabo VPS), Nginx, Systemd
 
-*   **Backend**: Python 3.10+, FastAPI
-*   **System Monitoring**: `psutil`, `ip`, `ufw`
-*   **Frontend**: HTML5, Vanilla JavaScript, Tailwind CSS (CDN)
-*   **Server**: Nginx (Reverse Proxy), Uvicorn (ASGI)
-*   **VPN**: WireGuard
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    User[User Device] -->|HTTPS/443| Nginx[Nginx Reverse Proxy]
+    User -->|UDP/51820| WG[WireGuard Interface wg0]
+    
+    subgraph "VPS (Ubuntu 22.04)"
+        Nginx -->|Proxy Pass| API[FastAPI Backend :8000]
+        
+        API <-->|Reads| Engine[Security Engine Thread]
+        
+        Engine -->|Checks| WG
+        Engine -->|Checks| UFW[Firewall Status]
+        Engine -->|Pings| Cloud[Cloudflare 1.1.1.1]
+    end
+🚀 Installation
+Prerequisites
+
+Ubuntu 20.04/22.04 Server
+
+Python 3.10+
+
+Root/Sudo access
+
+1. Clone & Setup
+
+Bash
+git clone [https://github.com/abaasi256/XO-Shield.git](https://github.com/abaasi256/XO-Shield.git) /opt/xo-shield
+cd /opt/xo-shield
+
+# Create Virtual Env
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+2. Configure Environment
+
+Create a .env file (optional) or rely on defaults in app/config.py.
+
+Bash
+export WIREGUARD_INTERFACE=wg0
+export CHECK_INTERVAL=10
+3. Deploy Infrastructure
+
+Bash
+# Run the automated setup script
+sudo bash scripts/setup_wireguard.sh
+4. Run as Service
+
+Bash
+# Copy systemd file
+sudo cp scripts/xo-shield.service /etc/systemd/system/
+sudo systemctl enable --now xo-shield
+🧠 The Security Engine
+The SecurityEngine class (app/engine.py) operates on a decoupled thread:
+
+VPN Integrity: Checks /sys/class/net/wg0 to verify the interface is physically UP.
+
+Firewall Audit: queries /usr/bin/systemctl is-active ufw to ensure the packet filter is running.
+
+Latency Probe: Executes a high-priority ICMP ping (/usr/bin/ping) to a neutral DNS (1.1.1.1) to detect routing anomalies.
+
+📜 License
+MIT License. Created as a Portfolio Project.
